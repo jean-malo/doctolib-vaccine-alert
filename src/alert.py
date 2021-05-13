@@ -134,7 +134,7 @@ def get_text_mail(vaccines):
 
 
 def already_sent(profile_id, sent_at):
-    conn = sqlite3.connect("covid.db")
+    conn = sqlite3.connect(settings.SQL_LITE_DB_PATH)
     cursor = conn.execute(
         "SELECT count(*) from SENT where profile_id=? AND sent_at=?",
         (profile_id, sent_at),
@@ -151,7 +151,7 @@ def mark_as_sent(vaccines):
         for start in vac["starts"]
         for slot in start["slots"]
     ]
-    conn = sqlite3.connect("covid.db")
+    conn = sqlite3.connect(settings.SQL_LITE_DB_PATH)
     conn.executemany("INSERT INTO SENT(profile_id, sent_at) VALUES (?, ?)", ids)
     conn.commit()
     conn.close()

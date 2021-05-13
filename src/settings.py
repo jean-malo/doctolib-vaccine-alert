@@ -6,6 +6,7 @@ SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 SMTP_LOGIN = os.getenv("SMTP_LOGIN")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SQL_LITE_DB_PATH = os.getenv("SQL_LITE_DB_PATH")
 MAX_PAGE_NO_RESULTS = 1
 MAX_PAGINATION = 10
 EMAIL_RECIPIENTS = os.getenv("EMAIL_RECIPIENTS").split(',')
