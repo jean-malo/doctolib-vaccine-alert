@@ -21,7 +21,7 @@ async def scroll(page):
         else:
             break
     await page.wait_for_load_state(state="networkidle")
-    await asyncio.sleep(2)
+    await asyncio.sleep(settings.WAIT_BEFORE_RETRY)
     await page.evaluate("window.scrollTo(0, 0);")
     await page.reload()
 
