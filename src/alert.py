@@ -16,16 +16,7 @@ new_line = "\n"
 
 
 def get_slack_message(vaccines):
-    message = [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": ":alert: Des rendez-vous pour se faire vacciner sont disponibles :alert:",
-            },
-        },
-        {"type": "divider"},
-    ]
+    message = []
     for vaccine in vaccines:
         message.extend(
             [
