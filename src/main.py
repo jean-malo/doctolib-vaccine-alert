@@ -34,7 +34,7 @@ async def main():
     parsed_results = []
     raw_results = []
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch()
         page = await browser.new_page()
         await page.set_viewport_size({"width": 800, "height": 650})
         await page.set_extra_http_headers(
