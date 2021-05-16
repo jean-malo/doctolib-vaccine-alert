@@ -21,4 +21,4 @@ DOCTOLIB_SEARCH_URL = "https://www.doctolib.fr/vaccination-covid-19/france?page=
 PLURAL_INTRO = "Voici la liste des rendez-vous disponibles:"
 SINGULAR_INTRO = "Voici le rendez-vous disponible:"
 ZIPCODE_WHITE_LIST = to_list(os.getenv("ZIPCODE_WHITE_LIST"))
-WAIT_BEFORE_RETRY = int(os.getenv("WAIT_BEFORE_RETRY"), 60) # time in seconds to wait before retrying to find appointment
+WAIT_BEFORE_RETRY = int(os.getenv("WAIT_BEFORE_RETRY", 60)) # time in seconds to wait before retrying to find appointment
