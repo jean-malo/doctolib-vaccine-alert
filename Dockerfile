@@ -14,6 +14,5 @@ COPY pyproject.toml .
 RUN pip install dateparser slack-sdk playwright
 RUN python -m playwright install
 COPY src src
-COPY emails.txt emails.txt
 
 CMD ["python", "-m", "src.main"]
