@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import json
 import os
 
@@ -12,18 +11,19 @@ from .alert import send_alert
 
 async def scroll(page):
     print("Scrolling")
-    await page.wait_for_load_state()
     cur_dist = 0
     height = await page.evaluate("() => document.body.scrollHeight")
     while True:
-        await page.wait_for_timeout(1000)
         if cur_dist < height:
+            await asyncio.sleep(0.4)
             await page.evaluate("window.scrollBy(0, 500);")
-            await asyncio.sleep(0.1)
             cur_dist += 500
         else:
             break
-    await page.click('"Suivant"')
+    await page.wait_for_load_state(state="networkidle")
+    await asyncio.sleep(2)
+    await page.evaluate("window.scrollTo(0, 0);")
+    await page.reload()
 
 
 async def main():
@@ -34,7 +34,7 @@ async def main():
     parsed_results = []
     raw_results = []
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
         await page.set_viewport_size({"width": 800, "height": 650})
         await page.set_extra_http_headers(
@@ -44,8 +44,7 @@ async def main():
             }
         )
         await page.goto(
-            url=settings.DOCTOLIB_SEARCH_URL,
-            wait_until="networkidle",
+            url="https://www.doctolib.fr/vaccination-covid-19/paris-75001?page=1&ref_visit_motive_ids[]=6970&ref_visit_motive_ids[]=7005&force_max_limit=2",
         )
         page.on(
             "response",
@@ -53,16 +52,8 @@ async def main():
                 parse_response(x, parsed_results, raw_results)
             ),
         )
-        for i in range(settings.MAX_PAGINATION):
+        while True:
             await scroll(page)
-            with open("parsed_results.json", "r+") as f:
-                results = [json.loads(line) for line in f]
-                f.truncate(0)
-                if results:
-                    send_alert(results)
-                elif i > settings.MAX_PAGE_NO_RESULTS:
-                    break
-        await browser.close()
 
 
 def export_parsed_results(results):
@@ -87,16 +78,34 @@ async def parse_response(response: Response, parsed_results, raw_results):
                 availabilities = data.get("availabilities", [])
                 availabilities = [i for i in availabilities if i["slots"]]
                 if availabilities:
-                    print(f'Found appointments for {center_name}')
-                    export_parsed_results(
-                        {
-                            "name": center_name,
-                            "url": f'https://www.doctolib.fr/{data["search_result"]["url"]}',
-                            "starts": availabilities,
-                            "profile_id": data["search_result"]["profile_id"],
-                            "address": f'{data["search_result"]["address"]}, {data["search_result"]["zipcode"]}, {data["search_result"]["city"]}',
-                        }
-                    )
+                    if (
+                        any(
+                            [
+                                data["search_result"]["zipcode"].startswith(i)
+                                for i in settings.ZIPCODE_WHITE_LIST
+                            ]
+                        )
+                        or not settings.ZIPCODE_WHITE_LIST
+                    ):
+                        print(
+                            f"🚨 Appointment(s) found for center {center_name}"
+                            f'link to book: https://www.doctolib.fr/{data["search_result"]["url"]}'
+                        )
+                        send_alert(
+                            [
+                                {
+                                    "name": center_name,
+                                    "url": f'https://www.doctolib.fr/{data["search_result"]["url"]}',
+                                    "starts": availabilities,
+                                    "profile_id": data["search_result"]["profile_id"],
+                                    "address": f'{data["search_result"]["address"]}, {data["search_result"]["zipcode"]}, {data["search_result"]["city"]}',
+                                }
+                            ]
+                        )
+                    else:
+                        print(
+                            f'Zipcode {data["search_result"]["zipcode"]} not allowed!'
+                        )
         else:
             print(f"No availabilities for {center_name}")
 

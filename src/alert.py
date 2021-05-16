@@ -15,7 +15,6 @@ locale.setlocale(locale.LC_TIME, "fr_FR")
 new_line = "\n"
 
 
-
 def get_slack_message(vaccines):
     message = [
         {
@@ -202,35 +201,37 @@ def send_alert(vaccines):
 
 def send_mail_alert(vaccines):
     for email in settings.EMAIL_RECIPIENTS:
-            msg = MIMEMultipart("alternative")
-            msg_text = (
-                MIMEText(f"Bonjour! \n {settings.PLURAL_INTRO}\n\n{get_text_mail(vaccines)}")
-                if len(vaccines) > 1
-                else MIMEText(
-                    f"Bonjour! \n {settings.SINGULAR_INTRO} \n {get_text_mail(vaccines)}"
-                )
+        msg = MIMEMultipart("alternative")
+        msg_text = (
+            MIMEText(
+                f"Bonjour! \n {settings.PLURAL_INTRO}\n\n{get_text_mail(vaccines)}"
             )
-            msg_html = (
-                MIMEText(
-                    f"{get_html_mail(vaccines)}",
-                    "html",
-                )
-                if len(vaccines) > 1
-                else MIMEText(
-                    f"{get_html_mail(vaccines, plural=False)}",
-                    "html",
-                )
+            if len(vaccines) > 1
+            else MIMEText(
+                f"Bonjour! \n {settings.SINGULAR_INTRO} \n {get_text_mail(vaccines)}"
             )
-            msg["Subject"] = (
-                f"🚨 Des rendez-vous pour se faire vacciner sont disponibles 🚨 "
-                if len(vaccines) > 1
-                else f"🚨 Un rendez-vous pour se faire vacciner est disponible 🚨 "
+        )
+        msg_html = (
+            MIMEText(
+                f"{get_html_mail(vaccines)}",
+                "html",
             )
-            msg.attach(msg_text)
-            msg.attach(msg_html)
-            msg["From"] = settings.EMAIL_FROM
-            msg["To"] = email
-            server_ssl = smtplib.SMTP_SSL(settings.SMTP_SERVER, 465)
-            server_ssl.ehlo()  # optional, called by login()
-            server_ssl.login(settings.SMTP_LOGIN, settings.SMTP_PASSWORD)
-            server_ssl.sendmail(msg["From"], msg["To"], msg.as_string())
+            if len(vaccines) > 1
+            else MIMEText(
+                f"{get_html_mail(vaccines, plural=False)}",
+                "html",
+            )
+        )
+        msg["Subject"] = (
+            f"🚨 Des rendez-vous pour se faire vacciner sont disponibles 🚨 "
+            if len(vaccines) > 1
+            else f"🚨 Un rendez-vous pour se faire vacciner est disponible 🚨 "
+        )
+        msg.attach(msg_text)
+        msg.attach(msg_html)
+        msg["From"] = settings.EMAIL_FROM
+        msg["To"] = email
+        server_ssl = smtplib.SMTP_SSL(settings.SMTP_SERVER, 465)
+        server_ssl.ehlo()  # optional, called by login()
+        server_ssl.login(settings.SMTP_LOGIN, settings.SMTP_PASSWORD)
+        server_ssl.sendmail(msg["From"], msg["To"], msg.as_string())
