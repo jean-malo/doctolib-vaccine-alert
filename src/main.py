@@ -95,7 +95,7 @@ async def parse_response(response: Response, parsed_results, raw_results):
                             [
                                 {
                                     "name": center_name,
-                                    "url": f'https://www.doctolib.fr/{data["search_result"]["url"]}',
+                                    "url": f'https://www.doctolib.fr{data["search_result"]["url"]}',
                                     "starts": availabilities,
                                     "profile_id": data["search_result"]["profile_id"],
                                     "address": f'{data["search_result"]["address"]}, {data["search_result"]["zipcode"]}, {data["search_result"]["city"]}',
