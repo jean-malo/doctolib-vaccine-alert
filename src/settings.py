@@ -23,6 +23,7 @@ SMTP_LOGIN = read_config_value(config, "smtp", "login")
 SMTP_PASSWORD = read_config_value(config, "smtp", "password")
 SQL_LITE_DB_PATH = read_config_value(config, "core", "db_path", fallback="covid.db")
 EMAIL_RECIPIENTS = to_list(read_config_value(config, "smtp", "recipients", fallback=""))
+USER_AGENT = read_config_value(config, "core", "user_agent", fallback="github.com/jean-malo/doctolib-vaccine-alert")
 DOCTOLIB_SEARCH_URL = read_config_value(
     config,
     "core",

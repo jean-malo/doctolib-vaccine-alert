@@ -62,7 +62,7 @@ async def main():
         await page.set_viewport_size({"width": 800, "height": 650})
         await page.set_extra_http_headers(
             {
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
+                "User-Agent": settings.USER_AGENT,
                 "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7,la;q=0.6",
             }
         )

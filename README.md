@@ -1,4 +1,7 @@
 # doctolib-vaccine-alert
+
+[Live demo on slack](https://join.slack.com/t/alerte-vaccin-covid/shared_invite/zt-qfcwlbky-0BWgWf~YL~e_DhHRFv~7hw)
+
 Bot that scrapes Doctolib to find available vaccination time slots
 
 Have a look at [config.ini](./config.ini) for the available settings.
