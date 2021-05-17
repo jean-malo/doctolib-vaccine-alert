@@ -5,7 +5,7 @@ Have a look at [config.ini](./config.ini) for the available settings.
 
 You should modify the config or add the relevant env vars before running the script.
 
-🚧 This was built in a few hours so excuse the code quality, I will improve it and add more features when I have more time.  
+🚧 This is a WIP, I will improve it and add more features when I have more time, feel free to open PRs if you have features that you want to add.  
 
 While it was designed for vaccines if you modify the query by changing `core.doctolib_search_url` in `config.ini` you could fetch appointments for any city & any subject. 
 
