@@ -6,10 +6,16 @@ config = configparser.ConfigParser()
 config.read("config.ini")
 
 
-SMTP_ENABLED = read_config_value(config, "smtp", "enabled", var_type=bool, fallback=False)
-SLACK_ENABLED = read_config_value(config, "slack", "enabled", var_type=bool, fallback=False)
+SMTP_ENABLED = read_config_value(
+    config, "smtp", "enabled", var_type=bool, fallback=False
+)
+SLACK_ENABLED = read_config_value(
+    config, "slack", "enabled", var_type=bool, fallback=False
+)
 # Change to true to open a new tab when an appointment is found
-BROWSER_ENABLED = read_config_value(config, "browser", "enabled", var_type=bool, fallback=True)
+BROWSER_ENABLED = read_config_value(
+    config, "browser", "enabled", var_type=bool, fallback=True
+)
 
 SLACK_WEBHOOK = read_config_value(config, "slack", "webhook")
 SMTP_SERVER = read_config_value(config, "smtp", "server", fallback="smtp.gmail.com")
@@ -32,6 +38,11 @@ RATE_LIMIT = read_config_value(
 )
 ALLOWED_ZIPCODES = to_list(
     read_config_value(config, "core", "allowed_zipcodes", fallback="")
+)
+
+BLACKLISTED_PROFILE_IDS = to_list(
+    read_config_value(config, "core", "blacklisted_profile_ids", fallback=""),
+    var_type=int,
 )
 
 PLURAL_INTRO = "Voici la liste des rendez-vous disponibles:"

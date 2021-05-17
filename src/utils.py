@@ -21,7 +21,7 @@ def read_config_value(config, section, key, var_type: Any = str, fallback=None):
         return config.getboolean(section, key, fallback=fallback)
 
 
-def to_list(string_separated):
+def to_list(string_separated, var_type=str):
     if not string_separated:
         return []
-    return string_separated.split(",")
+    return [var_type(i) for i in string_separated.split(",")]

@@ -133,7 +133,7 @@ def already_sent(profile_id, sent_at):
 
 def mark_as_sent(vaccines):
     ids = [
-        (vac["""profile_id"""], slot["start_date"])
+        (vac["profile_id"], slot["start_date"])
         for vac in vaccines
         for start in vac["starts"]
         for slot in start["slots"]
@@ -171,7 +171,13 @@ def get_html_mail(vaccines, plural=True):
 
 def send_alert(vaccines):
     for vac in vaccines:
+        if settings.BLACKLISTED_PROFILE_IDS and vac["profile_id"] in settings.BLACKLISTED_PROFILE_IDS:
+            print(f"{vac['profile_id']} is blacklisted")
+            vac["starts"] = []
         for start in vac["starts"]:
+            if not isinstance(start["slots"][0], dict):
+                # Some appointments are not formatted as a list of dict but rather a list of strings
+                start["slots"] = [{"start_date": i} for i in start["slots"]]
             start["slots"] = [
                 i
                 for i in start["slots"]
