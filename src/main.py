@@ -1,10 +1,9 @@
 import asyncio
 import json
 import os
-
 from playwright.async_api import Response
 from playwright.async_api import async_playwright
-
+import sqlite3
 from . import settings
 from .alert import send_alert
 
@@ -21,16 +20,40 @@ async def scroll(page):
         else:
             break
     await page.wait_for_load_state(state="networkidle")
-    await asyncio.sleep(settings.WAIT_BEFORE_RETRY)
+    await asyncio.sleep(settings.RATE_LIMIT)
     await page.evaluate("window.scrollTo(0, 0);")
     await page.reload()
 
 
+def check_if_table_exists():
+    conn = sqlite3.connect(settings.SQL_LITE_DB_PATH)
+    try:
+        cursor = conn.cursor()
+        # get the count of tables with the name
+        tablename = "SENT"
+        cursor.execute(
+            "SELECT count(name) FROM sqlite_master WHERE type='table' AND name=? ",
+            (tablename,),
+        )
+        if cursor.fetchone()[0] == 1:
+            print("Table to track messages sent exists.")
+            pass
+        else:
+            print("Table to track messages sent does not exist. Creating it.")
+            cursor.execute(
+                """create table SENT (
+                    profile_id INT not null, 
+                    sent_at CHAR(140));"""
+            )
+            cursor.execute("""
+                    create index idx_profile_sent on SENT (profile_id, sent_at);""")
+        conn.commit()
+    finally:
+        conn.close()
+
+
 async def main():
-    with open("parsed_results.json", "w"):
-        pass
-    with open("raw_results.json", "w"):
-        pass
+    check_if_table_exists()
     parsed_results = []
     raw_results = []
     async with async_playwright() as p:
@@ -44,7 +67,7 @@ async def main():
             }
         )
         await page.goto(
-            url="https://www.doctolib.fr/vaccination-covid-19/paris-75001?page=1&ref_visit_motive_ids[]=6970&ref_visit_motive_ids[]=7005&force_max_limit=2",
+            url=settings.DOCTOLIB_SEARCH_URL,
         )
         page.on(
             "response",
@@ -82,10 +105,10 @@ async def parse_response(response: Response, parsed_results, raw_results):
                         any(
                             [
                                 data["search_result"]["zipcode"].startswith(i)
-                                for i in settings.ZIPCODE_WHITE_LIST
+                                for i in settings.ALLOWED_ZIPCODES
                             ]
                         )
-                        or not settings.ZIPCODE_WHITE_LIST
+                        or not settings.ALLOWED_ZIPCODES
                     ):
                         print(
                             f"🚨 Appointment(s) found for center {center_name}"

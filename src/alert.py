@@ -1,12 +1,12 @@
 import locale
 import smtplib
 import sqlite3
+import webbrowser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import dateparser
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
+import requests
 
 from . import settings
 
@@ -64,18 +64,15 @@ def get_slack_message(vaccines):
 
 
 def send_slack_alert(vaccines):
-    client = WebClient(token=settings.SLACK_TOKEN)
-    channel_id = settings.SLACK_CHANNEL_ID
-
     try:
-        # Call the chat.postMessage method using the WebClient
-        result = client.chat_postMessage(
-            channel=channel_id,
-            blocks=get_slack_message(vaccines),
-            text=":alert: Des rendez-vous pour se faire vacciner sont disponibles :alert:",
+        requests.post(
+            url=settings.SLACK_WEBHOOK,
+            json=dict(
+                blocks=get_slack_message(vaccines),
+                text=":alert: Des rendez-vous pour se faire vacciner sont disponibles :alert:",
+            ),
         )
-
-    except SlackApiError as e:
+    except Exception as e:
         print(f"Error posting message: {e}")
 
 
@@ -185,8 +182,13 @@ def send_alert(vaccines):
     if not vaccines:
         print("all sent already")
     else:
-        send_mail_alert(vaccines)
-        send_slack_alert(vaccines)
+        if settings.SMTP_ENABLED:
+            send_mail_alert(vaccines)
+        if settings.SLACK_ENABLED:
+            send_slack_alert(vaccines)
+        if settings.BROWSER_ENABLED:
+            for vac in vaccines:
+                webbrowser.open(vac["url"])
         mark_as_sent(vaccines)
 
 
@@ -220,9 +222,8 @@ def send_mail_alert(vaccines):
         )
         msg.attach(msg_text)
         msg.attach(msg_html)
-        msg["From"] = settings.EMAIL_FROM
+        msg["From"] = settings.SMTP_LOGIN
         msg["To"] = email
         server_ssl = smtplib.SMTP_SSL(settings.SMTP_SERVER, 465)
-        server_ssl.ehlo()  # optional, called by login()
         server_ssl.login(settings.SMTP_LOGIN, settings.SMTP_PASSWORD)
         server_ssl.sendmail(msg["From"], msg["To"], msg.as_string())
