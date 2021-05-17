@@ -1,13 +1,13 @@
 import os
-import yaml
 from typing import Any
-import configparser
 
 
 def read_config_value(config, section, key, var_type: Any = str, fallback=None):
     env_var_key = f"{section.upper()}__{key.upper()}"
     env_value = os.getenv(env_var_key)
     if env_value:
+        if var_type == bool:
+            return env_value.lower() in ('true', '1', 't')
         return var_type(env_value)
     else:
         fallback = var_type(fallback)
