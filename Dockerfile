@@ -6,5 +6,6 @@ RUN pip install playwright dateparser PyYAML requests
 
 RUN python -m playwright install
 COPY src src
+COPY config.ini config.ini
 
 CMD ["python", "-m", "src.main"]
