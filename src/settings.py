@@ -1,6 +1,32 @@
 import configparser
+from typing import Any
+import os
 
-from src.utils import read_config_value, to_list
+
+def read_config_value(config, section, key, var_type: Any = str, fallback=None):
+    env_var_key = f"{section.upper()}__{key.upper()}"
+    env_value = os.getenv(env_var_key)
+    if env_value:
+        if var_type == bool:
+            return env_value.lower() in ("true", "1", "t")
+        return var_type(env_value)
+    else:
+        fallback = var_type(fallback)
+    if var_type == str:
+        return config.get(section, key, fallback=fallback)
+    elif var_type == int:
+        return config.getint(section, key, fallback=fallback)
+    elif var_type == float:
+        return config.getfloat(section, key, fallback=fallback)
+    elif var_type == bool:
+        return config.getboolean(section, key, fallback=fallback)
+
+
+def to_list(string_separated, var_type=str):
+    if not string_separated:
+        return []
+    return [var_type(i) for i in string_separated.split(",")]
+
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -23,7 +49,9 @@ SMTP_LOGIN = read_config_value(config, "smtp", "login")
 SMTP_PASSWORD = read_config_value(config, "smtp", "password")
 SQL_LITE_DB_PATH = read_config_value(config, "core", "db_path", fallback="covid.db")
 EMAIL_RECIPIENTS = to_list(read_config_value(config, "smtp", "recipients", fallback=""))
-USER_AGENT = read_config_value(config, "core", "user_agent", fallback="github.com/jean-malo/doctolib-vaccine-alert")
+USER_AGENT = read_config_value(
+    config, "core", "user_agent", fallback="github.com/jean-malo/doctolib-vaccine-alert"
+)
 DOCTOLIB_SEARCH_URL = read_config_value(
     config,
     "core",

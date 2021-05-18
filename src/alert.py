@@ -174,6 +174,8 @@ def send_alert(vaccines):
         if settings.BLACKLISTED_PROFILE_IDS and vac["profile_id"] in settings.BLACKLISTED_PROFILE_IDS:
             print(f"{vac['profile_id']} is blacklisted")
             vac["starts"] = []
+        else:
+            print(vac["profile_id"])
         for start in vac["starts"]:
             if not isinstance(start["slots"][0], dict):
                 # Some appointments are not formatted as a list of dict but rather a list of strings
