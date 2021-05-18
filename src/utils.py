@@ -1,45 +1,27 @@
-import json
-import sqlite3
-from urllib.parse import urlparse
-
-from src import settings
+import os
+from typing import Any
 
 
-def get_centers():
-    with open(get_centers_filename(), "r") as f:
-        return json.load(f)
+def read_config_value(config, section, key, var_type: Any = str, fallback=None):
+    env_var_key = f"{section.upper()}__{key.upper()}"
+    env_value = os.getenv(env_var_key)
+    if env_value:
+        if var_type == bool:
+            return env_value.lower() in ('true', '1', 't')
+        return var_type(env_value)
+    else:
+        fallback = var_type(fallback)
+    if var_type == str:
+        return config.get(section, key, fallback=fallback)
+    elif var_type == int:
+        return config.getint(section, key, fallback=fallback)
+    elif var_type == float:
+        return config.getfloat(section, key, fallback=fallback)
+    elif var_type == bool:
+        return config.getboolean(section, key, fallback=fallback)
 
 
-def get_centers_filename():
-    comma = ","
-    docto_location = urlparse(settings.DOCTOLIB_SEARCH_URL).path.split("/")[-1]
-    return f"data/centers_{docto_location}{f'_{comma.join(settings.ALLOWED_ZIPCODES)}' if settings.ALLOWED_ZIPCODES else ''}.json"
-
-
-def check_if_table_exists():
-    conn = sqlite3.connect(settings.SQL_LITE_DB_PATH)
-    try:
-        cursor = conn.cursor()
-        # get the count of tables with the name
-        tablename = "SENT"
-        cursor.execute(
-            "SELECT count(name) FROM sqlite_master WHERE type='table' AND name=? ",
-            (tablename,),
-        )
-        if cursor.fetchone()[0] == 1:
-            print("Table to track messages sent exists.")
-            pass
-        else:
-            print("Table to track messages sent does not exist. Creating it.")
-            cursor.execute(
-                """create table SENT (
-                    profile_id INT not null, 
-                    sent_at CHAR(140));"""
-            )
-            cursor.execute(
-                """
-                    create index idx_profile_sent on SENT (profile_id, sent_at);"""
-            )
-        conn.commit()
-    finally:
-        conn.close()
+def to_list(string_separated, var_type=str):
+    if not string_separated:
+        return []
+    return [var_type(i) for i in string_separated.split(",")]

@@ -1,19 +1,11 @@
-FROM python:3.8-slim-buster
+FROM mcr.microsoft.com/playwright:bionic
 
 RUN apt-get update && apt-get -qq -y install gcc curl locales locales-all
 
+RUN pip install playwright dateparser PyYAML requests
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
-    cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
-    poetry config virtualenvs.create false
-
-COPY poetry.lock .
-COPY pyproject.toml .
-
-RUN poetry install --no-root --no-dev
 RUN python -m playwright install
 COPY src src
-COPY data data
+COPY config.ini config.ini
 
 CMD ["python", "-m", "src.main"]
