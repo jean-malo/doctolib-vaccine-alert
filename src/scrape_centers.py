@@ -20,14 +20,18 @@ def launch_centers_scraper():
     params = parse_qs(url.query)
     centers = []
     for i in range(20):
-        results = paginate_search_results(headers, page, params)
-        if not results:
+        print(i)
+        try:
+            results = paginate_search_results(headers, page, params)
+        except SearchEnded:
             break
         centers.extend(results)
         page += 1
     save_results(centers)
     return centers
 
+class SearchEnded(Exception):
+    pass
 
 def paginate_search_results(headers, page, params):
     results = []
@@ -40,9 +44,10 @@ def paginate_search_results(headers, page, params):
     )
     if not json_data:
         print(f'No more centers for page {page}')
-        return []
+        raise SearchEnded()
     parsed_profiles = json.loads(json_data.contents[0])
     for profile in parsed_profiles:
+        print(profile['address']['name'])
         if not (
             any(
                 [
