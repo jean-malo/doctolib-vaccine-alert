@@ -7,9 +7,10 @@ from email.mime.text import MIMEText
 
 import dateparser
 import requests
-
+import logging
 from . import settings
 
+logger = logging.getLogger(__name__)
 locale.setlocale(locale.LC_TIME, "fr_FR")
 
 new_line = "\n"
@@ -73,7 +74,7 @@ def send_slack_alert(vaccines):
             ),
         )
     except Exception as e:
-        print(f"Error posting message: {e}")
+        logger.error(f"Error posting message: {e}")
 
 
 def format_date(dates, language="SLACK"):
@@ -172,7 +173,7 @@ def get_html_mail(vaccines, plural=True):
 def send_alert(vaccines):
     for vac in vaccines:
         if settings.BLACKLISTED_PROFILE_IDS and vac["profile_id"] in settings.BLACKLISTED_PROFILE_IDS:
-            print(f"{vac['profile_id']} is blacklisted")
+            logger.info(f"{vac['profile_id']} is blacklisted")
             vac["starts"] = []
         for start in vac["starts"]:
             if not isinstance(start["slots"][0], dict):
@@ -186,7 +187,7 @@ def send_alert(vaccines):
         vac["starts"] = [i for i in vac["starts"] if i["slots"]]
     vaccines = [v for v in vaccines if v["starts"]]
     if not vaccines:
-        print("all sent already")
+        logger.info("all sent already")
     else:
         if settings.SMTP_ENABLED:
             send_mail_alert(vaccines)

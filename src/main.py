@@ -6,10 +6,13 @@ from playwright.async_api import async_playwright
 import sqlite3
 from . import settings
 from .alert import send_alert
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def scroll(page):
-    print("Scrolling")
+    logger.info("Scrolling")
     cur_dist = 0
     height = await page.evaluate("() => document.body.scrollHeight")
     while True:
@@ -36,17 +39,19 @@ def check_if_table_exists():
             (tablename,),
         )
         if cursor.fetchone()[0] == 1:
-            print("Table to track messages sent exists.")
+            logger.info("Table to track messages sent exists.")
             pass
         else:
-            print("Table to track messages sent does not exist. Creating it.")
+            logger.info("Table to track messages sent does not exist. Creating it.")
             cursor.execute(
                 """create table SENT (
                     profile_id INT not null, 
                     sent_at CHAR(140));"""
             )
-            cursor.execute("""
-                    create index idx_profile_sent on SENT (profile_id, sent_at);""")
+            cursor.execute(
+                """
+                    create index idx_profile_sent on SENT (profile_id, sent_at);"""
+            )
         conn.commit()
     finally:
         conn.close()
@@ -110,7 +115,7 @@ async def parse_response(response: Response, parsed_results, raw_results):
                         )
                         or not settings.ALLOWED_ZIPCODES
                     ):
-                        print(
+                        logger.info(
                             f"🚨 Appointment(s) found for center {center_name}"
                             f'link to book: https://www.doctolib.fr/{data["search_result"]["url"]}'
                         )
@@ -126,11 +131,13 @@ async def parse_response(response: Response, parsed_results, raw_results):
                             ]
                         )
                     else:
-                        print(
+                        logger.info(
                             f'Zipcode {data["search_result"]["zipcode"]} not allowed!'
                         )
         else:
-            print(f"No availabilities for {center_name}")
+            logger.info(f"No availabilities for {center_name}")
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s')
+    asyncio.run(main())
