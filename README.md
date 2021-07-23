@@ -1,5 +1,8 @@
 # doctolib-vaccine-alert
 
+https://user-images.githubusercontent.com/56539593/126817143-a84461c6-922c-475f-8923-06510190eacc.mp4
+
+
 [Live demo on slack](https://join.slack.com/t/alerte-vaccin-covid/shared_invite/zt-qfcwlbky-0BWgWf~YL~e_DhHRFv~7hw)
 
 Bot that scrapes Doctolib to find available vaccination time slots
